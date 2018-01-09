@@ -41,8 +41,20 @@ func.c:256:28: fatal error: ta-lib/ta_libc.h: No such file or directory
 compilation terminated.
 ```
 
-This typically means that it can't find the underlying ``TA-Lib`` library,
-a dependency which needs to be installed.
+or:
+
+```
+common.obj : error LNK2001: unresolved external symbol TA_SetUnstablePeriod
+common.obj : error LNK2001: unresolved external symbol TA_Shutdown
+common.obj : error LNK2001: unresolved external symbol TA_Initialize
+common.obj : error LNK2001: unresolved external symbol TA_GetUnstablePeriod
+common.obj : error LNK2001: unresolved external symbol TA_GetVersionString
+```
+
+This typically means that it can't find the underlying ``TA-Lib`` library, a
+dependency which needs to be installed.  On Windows, this could be caused by
+installing the 32-bit binary distribution of the underlying ``TA-Lib`` library,
+but trying to use it with 64-bit Python.
 
 Sometimes installation will fail with errors like this:
 
@@ -77,6 +89,9 @@ $ brew install ta-lib
 Download [ta-lib-0.4.0-msvc.zip](http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-msvc.zip)
 and unzip to ``C:\ta-lib``
 
+> This is a 32-bit release.  If you want to use 64-bit Python, you will need
+> to build a 64-bit version of the library.
+
 ##### Linux
 
 Download [ta-lib-0.4.0-src.tar.gz](http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz) and:
@@ -100,8 +115,7 @@ parameters, unless specified as keyword arguments. Typically, these functions
 will have an initial "lookback" period (a required number of observations
 before an output is generated) set to ``NaN``.
 
-For convenience, the Function API supports both ``numpy.ndarray`` and
-``pandas.Series`` types.
+For convenience, the Function API supports ``numpy.ndarray`` inputs.
 
 All of the following examples use the Function API:
 
@@ -216,7 +230,7 @@ print talib.get_function_groups()
 * Cycle Indicators
 * Pattern Recognition
 
-#### Overlap Studies
+##### Overlap Studies
 ```
 BBANDS               Bollinger Bands
 DEMA                 Double Exponential Moving Average
@@ -237,7 +251,7 @@ TRIMA                Triangular Moving Average
 WMA                  Weighted Moving Average
 ```
 
-#### Momentum Indicators
+##### Momentum Indicators
 ```
 ADX                  Average Directional Movement Index
 ADXR                 Average Directional Movement Index Rating
@@ -271,14 +285,14 @@ ULTOSC               Ultimate Oscillator
 WILLR                Williams' %R
 ```
 
-#### Volume Indicators
+##### Volume Indicators
 ```
 AD                   Chaikin A/D Line
 ADOSC                Chaikin A/D Oscillator
 OBV                  On Balance Volume
 ```
 
-#### Cycle Indicators
+##### Cycle Indicators
 ```
 HT_DCPERIOD          Hilbert Transform - Dominant Cycle Period
 HT_DCPHASE           Hilbert Transform - Dominant Cycle Phase
@@ -287,7 +301,7 @@ HT_SINE              Hilbert Transform - SineWave
 HT_TRENDMODE         Hilbert Transform - Trend vs Cycle Mode
 ```
 
-#### Price Transform
+##### Price Transform
 ```
 AVGPRICE             Average Price
 MEDPRICE             Median Price
@@ -295,14 +309,14 @@ TYPPRICE             Typical Price
 WCLPRICE             Weighted Close Price
 ```
 
-#### Volatility Indicators
+##### Volatility Indicators
 ```
 ATR                  Average True Range
 NATR                 Normalized Average True Range
 TRANGE               True Range
 ```
 
-#### Pattern Recognition
+##### Pattern Recognition
 ```
 CDL2CROWS            Two Crows
 CDL3BLACKCROWS       Three Black Crows

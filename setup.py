@@ -10,17 +10,19 @@ display_option_names = Distribution.display_option_names + ['help', 'help-comman
 query_only = any('--' + opt in sys.argv for opt in display_option_names) or len(sys.argv) < 2 or sys.argv[1] == 'egg_info'
 
 # Use setuptools for querying the package, normal builds use distutils
-if query_only:
+if query_only or 'sdist' in sys.argv:
     try:
-        from setuptools import setup
+        from setuptools import setup, Extension
     except ImportError:
         from distutils.core import setup
+        from distutils.extension import Extension
 else:
     from distutils.core import setup
-
-from distutils.extension import Extension
+    from distutils.extension import Extension
 
 lib_talib_name = 'ta_lib'  # the underlying C library's name
+
+runtime_lib_dirs = []
 
 platform_supported = False
 for prefix in ['darwin', 'linux', 'bsd', 'sunos']:
@@ -43,7 +45,10 @@ for prefix in ['darwin', 'linux', 'bsd', 'sunos']:
             '/opt/local/lib',
         ]
         if 'TA_LIBRARY_PATH' in os.environ:
-            lib_talib_dirs.append(os.environ['TA_LIBRARY_PATH'])
+            runtime_lib_dirs = os.environ['TA_LIBRARY_PATH']
+            if runtime_lib_dirs:
+                runtime_lib_dirs = runtime_lib_dirs.split(os.pathsep)
+                lib_talib_dirs.extend(runtime_lib_dirs)
         break
 
 if sys.platform == "win32":
@@ -80,20 +85,20 @@ cmdclass = {}
 if has_cython:
     cmdclass['build_ext'] = build_ext
 
-ext_modules = []
-for name in ['common', 'func', 'abstract', 'stream']:
-    ext = Extension(
-        'talib.%s' % name,
-        [('talib/%s.pyx' if has_cython else 'talib/%s.c') % name],
-        include_dirs = include_dirs,
-        library_dirs = lib_talib_dirs,
-        libraries = [lib_talib_name]
+ext_modules = [
+    Extension(
+        'talib._ta_lib',
+        ['talib/_ta_lib.pyx' if has_cython else 'talib/_ta_lib.c'],
+        include_dirs=include_dirs,
+        library_dirs=lib_talib_dirs,
+        libraries=[lib_talib_name],
+        runtime_library_dirs=runtime_lib_dirs
     )
-    ext_modules.append(ext)
+]
 
 setup(
     name = 'TA-Lib',
-    version = '0.4.10',
+    version = '0.4.14',
     description = 'Python wrapper for TA-Lib',
     author = 'John Benediktsson',
     author_email = 'mrjbq7@gmail.com',
@@ -111,6 +116,7 @@ setup(
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
         "Programming Language :: Cython",
         "Topic :: Office/Business :: Financial",
         "Topic :: Scientific/Engineering :: Mathematics",
@@ -121,5 +127,5 @@ setup(
     packages = ['talib'],
     ext_modules = ext_modules,
     cmdclass = cmdclass,
-    requires = ['numpy'],
+    install_requires = ['numpy'],
 )
